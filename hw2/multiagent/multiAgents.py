@@ -74,8 +74,29 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        return successorGameState.getScore() #default scoure
-        #please change the return score as the score you want
+
+        foodPos = [(i,j)
+                   for i,col in enumerate(newFood)
+                   for j,row in enumerate(col) if row]
+        foodDis = [manhattanDistance(newPos, pos)
+                   for pos in foodPos]
+        foodDis.sort()
+        foodScore = min(foodDis) if len(foodDis) != 0 else 0
+        # foodScore = - foodScore - 20*len(foodPos)
+        foodScore = - 2*foodScore - 40*len(foodPos)
+
+        ghostPos = [state.getPosition()
+                    for state in newGhostStates]
+        ghostDis = [manhattanDistance(newPos, pos)
+                    for pos in ghostPos]
+        ghostDis.sort()
+        ghostScore = min(ghostDis) if len(ghostDis) != 0 else 0
+        ghostScore = 100 if ghostScore > 2 else ghostScore
+
+        score = foodScore + ghostScore
+
+        # please change the return score as the score you want
+        return score
 
 def scoreEvaluationFunction(currentGameState):
     """
