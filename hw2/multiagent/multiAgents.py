@@ -133,6 +133,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
       Your minimax agent (question 2)
     """
 
+
     def getAction(self, gameState):
         """
           Returns the minimax action from the current gameState using self.depth
@@ -152,6 +153,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
 
+        INFINITY = 1e300
+
         def min_value(state, depth, agent):
             """The min value ghost can choose.
                 return: a utility value
@@ -159,17 +162,18 @@ class MinimaxAgent(MultiAgentSearchAgent):
             actions = state.getLegalActions(agent)
             if len(actions) == 0:
                 return self.evaluationFunction(state)
+            value = INFINITY
             if agent == state.getNumAgents() - 1:
                 if depth == self.depth:
-                    values = [self.evaluationFunction(state.generateSuccessor(agent, a))
-                              for a in actions]
+                    for a in actions:
+                        value = min(value, self.evaluationFunction(state.generateSuccessor(agent, a)))
                 else:
-                    values = [max_value(state.generateSuccessor(agent, a), depth+1)
-                              for a in actions]
+                    for a in actions:
+                        value = min(value, max_value(state.generateSuccessor(agent, a), depth+1))
             else:
-                values = [min_value(state.generateSuccessor(agent, a), depth, agent+1)
-                          for a in actions]
-            return min(values)
+                for a in actions:
+                    value = min(value, min_value(state.generateSuccessor(agent, a), depth, agent+1))
+            return value
 
         def max_value(state, depth, ret_action=False):
             """The max value pacman can choose.
@@ -178,12 +182,16 @@ class MinimaxAgent(MultiAgentSearchAgent):
             actions = state.getLegalActions(0)
             if len(actions) == 0:
                 return self.evaluationFunction(state)
-            values = [min_value(state.generateSuccessor(0, a), depth, 1)
-                      for a in actions]
+            action = 0
+            value = - INFINITY
+            for a in actions:
+                if value < min_value(state.generateSuccessor(0, a), depth, 1):
+                    action = a
+                    value = min_value(state.generateSuccessor(0, a), depth, 1)
             if ret_action:
-                return actions[values.index(max(values))]
+                return action
             else:
-                return max(values)
+                return value
 
         return max_value(gameState, 1, True)
 
