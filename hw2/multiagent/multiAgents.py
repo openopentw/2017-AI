@@ -151,7 +151,41 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns the total number of agents in the game
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        def min_value(state, depth, agent):
+            """The min value ghost can choose.
+                return: a utility value
+            """
+            actions = state.getLegalActions(agent)
+            if len(actions) == 0:
+                return self.evaluationFunction(state)
+            if agent == state.getNumAgents() - 1:
+                if depth == self.depth:
+                    values = [self.evaluationFunction(state.generateSuccessor(agent, a))
+                              for a in actions]
+                else:
+                    values = [max_value(state.generateSuccessor(agent, a), depth+1)
+                              for a in actions]
+            else:
+                values = [min_value(state.generateSuccessor(agent, a), depth, agent+1)
+                          for a in actions]
+            return min(values)
+
+        def max_value(state, depth, ret_action=False):
+            """The max value pacman can choose.
+                return: a utility value
+            """
+            actions = state.getLegalActions(0)
+            if len(actions) == 0:
+                return self.evaluationFunction(state)
+            values = [min_value(state.generateSuccessor(0, a), depth, 1)
+                      for a in actions]
+            if ret_action:
+                return actions[values.index(max(values))]
+            else:
+                return max(values)
+
+        return max_value(gameState, 1, True)
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
