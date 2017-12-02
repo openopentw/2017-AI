@@ -133,7 +133,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
       Your minimax agent (question 2)
     """
 
-
     def getAction(self, gameState):
         """
           Returns the minimax action from the current gameState using self.depth
@@ -175,7 +174,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
         def max_value(state, depth, ret_action=False):
             """The max value pacman can choose.
-                return: a utility value
+                return: a utility value or an action
             """
             actions = state.getLegalActions(0)
             if len(actions) == 0:
@@ -230,7 +229,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
         def max_value(state, depth, alpha, beta, ret_action=False):
             """The max value pacman can choose.
-                return: a utility value
+                return: a utility value or an action
             """
             actions = state.getLegalActions(0)
             if len(actions) == 0:
@@ -265,7 +264,51 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        INFINITY = 1e300
+
+        def mean(nums):
+            """The mean of a list, and it will deal with integer-truncate problem."""
+            return float(sum(nums)) / max(len(nums), 1)
+
+        def avg_value(state, depth, agent):
+            """The average value ghosts choose.
+                return: a utility value
+            """
+            actions = state.getLegalActions(agent)
+            if len(actions) == 0:
+                return self.evaluationFunction(state)
+            values = []
+            for a in actions:
+                if agent == state.getNumAgents() - 1:
+                    if depth == self.depth:
+                        values += [self.evaluationFunction(state.generateSuccessor(agent, a))]
+                    else:
+                        values += [max_value(state.generateSuccessor(agent, a), depth+1)]
+                else:
+                    values += [avg_value(state.generateSuccessor(agent, a), depth, agent+1)]
+            return mean(values)
+
+        def max_value(state, depth, ret_action=False):
+            """The max value pacman can choose.
+                return: a utility value or an action
+            """
+            actions = state.getLegalActions(0)
+            if len(actions) == 0:
+                return self.evaluationFunction(state)
+            action = 0
+            value = - INFINITY
+            for a in actions:
+                new_value = avg_value(state.generateSuccessor(0, a), depth, 1)
+                if value < new_value:
+                    action = a
+                    value = new_value
+            if ret_action:
+                return action
+            else:
+                return value
+
+        return max_value(gameState, 1, ret_action=True)
 
 def betterEvaluationFunction(currentGameState):
     """
